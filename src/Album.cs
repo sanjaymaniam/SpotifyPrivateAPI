@@ -303,6 +303,12 @@ namespace SpotifyPrivate
 
         public class Track
         {
+            public string TrackId { get; set; }
+
+            public string AlbumName { get; set; }
+
+            public string AlbumId { get; set; }
+
             [JsonProperty("saved", NullValueHandling = NullValueHandling.Ignore)]
             public bool? Saved { get; set; }
 

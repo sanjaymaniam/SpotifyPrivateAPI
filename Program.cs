@@ -1,157 +1,163 @@
-﻿using System.Net;
+﻿using SpotifyPrivate.Album;
+using SpotifyAPI.Web;
+using static SpotifyAPI.Web.PlayerResumePlaybackRequest;
+using SpotifyPrivateAPI.src;
 
 class Program
 {
+    // Get these from https://developer.spotify.com/dashboard
+    private static string CLIENT_ID = "YOUR_CLIENT_ID";
+    private static string SECRET_KEY = "YOUR_SECRET_KEY";
+
+    // Using a second client to get the Play Counts
+    private static SpotifyPrivate.API _spotifyPrivateClient;
+    private static SpotifyClient _spotifyClient;
+
+    // Storing the artist ID for Ilaiyaraja to fetch all his albums
+    private static string _ilaiyarajaArtistId = "3m49WVMU4zCkaVEKb8kFW7";
+
     static async Task Main()
-    {   
-        WebProxy proxy = new() { 
-            Address = new Uri("http://username:password@127.0.0.1:25565"),
-            Credentials = new NetworkCredential("username", "password")
-        };
+    {
+        await InitializeSpotifyClients();
 
-        var spotify = new SpotifyPrivate.API();
+        var albums = await GetAllAlbumsByArtistAsync(_ilaiyarajaArtistId);
+        albums.Reverse(); // Reversing the albums array to get the oldest albums first
 
-        //If you want to use a proxy, pass it as a parameter to the constructor
-        //var spotify = new SpotifyPrivate.API(new SpotifyPrivate.API(proxyConfig: proxy);
+        Console.WriteLine("\n Showing all albums by Ilaiyaraja:");
+        ShowAlbums(albums);
 
-        var track = await spotify.GetTrack("3PavsmA9S6QA5lNmmsuOif");
+
+        int NUMBER_OF_ALBUMS_TO_PRINT_FOR_DEMO = 5;
+        for(int i = 0;i < NUMBER_OF_ALBUMS_TO_PRINT_FOR_DEMO; i++) 
+        {
+            var album = albums[i];
+            Console.WriteLine($"Getting all tracks from: {album.Name}");
+            var tracks = await GetAllTracksByAlbumAsync(album.Id);
+            
+            // Also make a new request to get PlayCount using the Private Client
+            foreach(var track in tracks)
+            {
+                var info = await GetTrackInfoAsync(_spotifyPrivateClient, track.Id);
+                //Console.WriteLine($"Play Count: {info.Playcount}");
+                track.PlayCount = info.Playcount;
+            }
+
+            ShowAllTracks(tracks);
+        }
+        Console.WriteLine("--------------------------------------------------");
+    }
+
+    private async static void ShowAllTracks(List<ComplexTrack> tracks)
+    {
+        for (int i = 0; i < tracks.Count; i++)
+        {
+            var track = tracks[i];
+            //var trackInfoFromPrivateClient = await GetTrackInfoAsync(_spotifyPrivateClient, track.Id);
+            Console.WriteLine($"{i + 1}. {track.Name} : {track.Id} (Play Count: {track.PlayCount})");
+        }
+        Console.WriteLine();
+    }
+
+    private static void ShowAlbums(List<SimpleAlbum> albums)
+    {
+        for (int i = 0; i < albums.Count; i++) 
+        {
+            var album = albums[i];
+            Console.WriteLine($"{i + 1}. {album.Name} : {album.Id} : {album.ReleaseDate}");
+        }
+        Console.WriteLine();
+    }
+
+    private static async Task InitializeSpotifyClients()
+    {
+        _spotifyPrivateClient = new SpotifyPrivate.API();
+
+        var config = SpotifyClientConfig.CreateDefault();
+        var request = new ClientCredentialsRequest(CLIENT_ID, SECRET_KEY);
+        var response = await new OAuthClient(config).RequestToken(request);
+        _spotifyClient = new SpotifyClient(config.WithToken(response.AccessToken));
+    }
+
+    static async Task<Track> GetTrackInfoAsync(SpotifyPrivate.API spotify, string trackId)
+    {
+        var track = await spotify.GetTrack(trackId);
 
         if (track == null)
         {
-            Console.WriteLine("Track not found");
-            return;
+            Console.WriteLine($"Track not found: {trackId}");
+            return null;
         }
-
-        Console.WriteLine("Track Info:");
-        Console.WriteLine("Name: " + track.Data.TrackUnion.Name);
-        Console.WriteLine("Artist: " + track.Data.TrackUnion.FirstArtist.Items[0].Profile.Name);
-        Console.WriteLine("Album: " + track.Data.TrackUnion.AlbumOfTrack.Name);
-        Console.WriteLine("Playcount:" + track.Data.TrackUnion.Playcount);
-
-        Console.WriteLine("--------------------------------------------------");
-
-        var artist = await spotify.GetArtist("0NGAZxHanS9e0iNHpR8f2W");
-
-        if(artist == null)
+        return new Track
         {
-            Console.WriteLine("Artist not found");
-            return;
-        }
-        Console.WriteLine("Artist Info:");
-        Console.WriteLine("Name: " + artist.Data.ArtistUnion.Profile.Name);
-        Console.WriteLine("Followers: " + artist.Data.ArtistUnion.Stats.Followers);
-        Console.WriteLine("Monthly Listeners: " + artist.Data.ArtistUnion.Stats.MonthlyListeners);
-        Console.WriteLine("World Rank: " + artist.Data.ArtistUnion.Stats.WorldRank); // Only for Top500
+            Name= track.Data.TrackUnion.Name,
+            Playcount = track.Data.TrackUnion.Playcount,
+        };
+    }
 
-        Console.WriteLine("--------------------------------------------------");
-
-        var playlist = await spotify.GetPlaylist("37i9dQZF1DX0FOF1IUWK1W", fetchAllSongs: false); // By default only 400 first songs are fetched
-
-        if (playlist == null)
+    public static async Task<List<SimpleAlbum>> GetAllAlbumsByArtistAsync(string artistId)
+    {
+        var albums = new List<SimpleAlbum>();
+        int offset = 0; // Initial offset is set to 0
+        while (true)
         {
-            Console.WriteLine("Playlist not found");
-            return;
+            var req = new ArtistsAlbumsRequest
+            {
+                Limit = 50,
+                Offset = offset, // Set the offset for pagination
+                IncludeGroupsParam = ArtistsAlbumsRequest.IncludeGroups.Album
+            };
+
+            var albumsToAdd = await _spotifyClient.Artists.GetAlbums(artistId, req);
+
+            if (albumsToAdd.Items.Count == 0)
+            {
+                break; // Break the loop if no albums are returned
+            }
+
+            // Process each album
+            foreach (var album in albumsToAdd.Items)
+            {
+                try
+                {
+                    albums.Add(album);
+                    offset++;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                    break; // Break out of the loop in case of an exception
+                }
+            }
+
+            // Check if the number of albums fetched is less than the limit, which means no more albums are left
+            if (albumsToAdd.Items.Count < 50)
+            {
+                break;
+            }
         }
+        return albums;
+    }
 
-        Console.WriteLine("Playlist Info:");
-        Console.WriteLine("Name: " + playlist.Data.PlaylistV2.Name);
-        Console.WriteLine("Description: " + playlist.Data.PlaylistV2.Description);
-        Console.WriteLine("Likes: " + playlist.Data.PlaylistV2.Followers); // Spotify renamed "Followers" to "Likes" ¯\_(ツ)_/¯
-        Console.WriteLine("Song Count: " + playlist.Data.PlaylistV2.Content.TotalCount);
-        Console.WriteLine("Owner: " + playlist.Data.PlaylistV2.OwnerV2.Data.Name);
-
-        Console.WriteLine("--------------------------------------------------");
-
-        var user = await spotify.GetUser("22keufaf2l4fpmztovnu5llmq");
-
-        if (user == null)
+    public static async Task<List<ComplexTrack>> GetAllTracksByAlbumAsync(string albumId)
+    {
+        var tracks = new List<ComplexTrack>();
+        var req = new AlbumTracksRequest
         {
-            Console.WriteLine("User not found");
-            return;
-        }
+            Limit = 50 // Maximum limit
+        };
+        Paging<SimpleTrack> albumTracks = await _spotifyClient.Albums.GetTracks(albumId, req);
 
-        Console.WriteLine("User Info:");
-        Console.WriteLine("Name: " + user.Name);
-        Console.WriteLine("Followers: " + user.FollowersCount);
-        Console.WriteLine("Following: " + user.FollowingCount);
-        Console.WriteLine("Playlist Count: " + user.PublicPlaylists.Count);
-        Console.WriteLine("Last Artist Played: " + user.RecentlyPlayedArtists[0].Name);
-
-        Console.WriteLine("--------------------------------------------------");
-
-        var album = await spotify.GetAlbum("0BNTXZBnKPTe3xUDwosPfV");
-
-        if (album == null)
+        // Collect tracks and handle pagination
+        while (true)
         {
-            Console.WriteLine("Album not found");
-            return;
+            //tracks.AddRange(albumTracks.Items);
+            foreach(var track in albumTracks.Items)
+            {
+                tracks.Add(new ComplexTrack(track));
+            }
+            if (albumTracks.Next == null || albumTracks.Items.Count == 0)
+                break;
         }
-
-        Console.WriteLine("Album Info:");
-        Console.WriteLine("Name: " + album.Data.AlbumUnion.Name);
-        Console.WriteLine("Artist: " + album.Data.AlbumUnion.Artists.Items[0].Profile.Name);
-        Console.WriteLine("Release Date: " + album.Data.AlbumUnion.Date.IsoString);
-        Console.WriteLine("Total Play Count: " + album.Data.AlbumUnion.TotalPlayCount);
-
-        Console.WriteLine("--------------------------------------------------");
-
-        var dailyChart = await spotify.GetPlaylist("37i9dQZEVXbMXbN3EUUhlg");
-
-        if (dailyChart == null)
-        {
-            Console.WriteLine("Chart not found");
-            return;
-        }
-
-        Console.WriteLine("Playlist Info:");
-        Console.WriteLine("Name: " + dailyChart.Data.PlaylistV2.Name);
-        Console.WriteLine("Top 1 Track: " + dailyChart.Data.PlaylistV2.Content.Items[0].ItemV2.Data.Name);
-        Console.WriteLine("Daily Play Count: " + dailyChart.Data.PlaylistV2.Content.Items[0].Attributes[3].Value);
-
-        Console.WriteLine("--------------------------------------------------");
-
-        var weeklyChart = await spotify.GetPlaylist("37i9dQZEVXbKzoK95AbRy9");
-
-        if (weeklyChart == null)
-        {
-            Console.WriteLine("Chart not found");
-            return;
-        }
-
-        Console.WriteLine("Playlist Info:");
-        Console.WriteLine("Name: " + weeklyChart.Data.PlaylistV2.Name);
-        Console.WriteLine("Top 1 Track: " + weeklyChart.Data.PlaylistV2.Content.Items[0].ItemV2.Data.Name);
-        Console.WriteLine("Weekly Play Count: " + weeklyChart.Data.PlaylistV2.Content.Items[0].Attributes[3].Value);
-
-        Console.WriteLine("--------------------------------------------------");
-
-        var userSearch = await spotify.SearchUser("Spotify");
-
-        if (weeklyChart == null)
-        {
-            Console.WriteLine("User search failed");
-            return;
-        }
-
-        Console.WriteLine("Users found:");
-
-        string usersConc = null;
-
-        foreach (var sUser in userSearch.Data.SearchV2.Users.Items)
-            usersConc = usersConc + "," + sUser.Data.Username;
-
-        Console.WriteLine(usersConc);
-
-        Console.WriteLine("--------------------------------------------------");
-
-
-
-        // To use this method you need pass a valid authenticated access token to constructor
-        // var spotify = new SpotifyPrivate.API(YOUR_ACCESS_TOKEN_HERE);
-        var followResult = await spotify.FollowUser("22keufaf2l4fpmztovnu5llmq");
-        Console.WriteLine(followResult ? "Follow Success" : "Follow Failed");
-
-
-        Console.ReadKey();
+        return tracks;
     }
 }
