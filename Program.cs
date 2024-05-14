@@ -2,49 +2,183 @@
 using SpotifyAPI.Web;
 using static SpotifyAPI.Web.PlayerResumePlaybackRequest;
 using SpotifyPrivateAPI.src;
+using HtmlAgilityPack;
+using Newtonsoft.Json;
+using IdentityModel;
+using System.Text;
+using System.Security.Cryptography;
+using Microsoft.AspNetCore.Http.Extensions;
+using static System.Formats.Asn1.AsnWriter;
+
+class ParserAlbum
+{
+    public string name;
+    //public string language;
+    //public string year;
+}
 
 class Program
 {
     // Get these from https://developer.spotify.com/dashboard
     private static string CLIENT_ID = "YOUR_CLIENT_ID";
     private static string SECRET_KEY = "YOUR_SECRET_KEY";
+    private const string RedirectUri = "http://localhost/";
 
     // Using a second client to get the Play Counts
     private static SpotifyPrivate.API _spotifyPrivateClient;
     private static SpotifyClient _spotifyClient;
 
-    // Storing the artist ID for Ilaiyaraja to fetch all his albums
-    private static string _ilaiyarajaArtistId = "3m49WVMU4zCkaVEKb8kFW7";
+    // Storing the artist ID for Yuvan to fetch all his albums
+    //private static string _yuvanArtistId = "29aw5YCdIw2FEXYyAJZI8l";
+
+    private static string _playlistID = "YOUR_PLAYLIST_ID";
 
     static async Task Main()
     {
         await InitializeSpotifyClients();
 
-        var albums = await GetAllAlbumsByArtistAsync(_ilaiyarajaArtistId);
-        albums.Reverse(); // Reversing the albums array to get the oldest albums first
-
-        Console.WriteLine("\n Showing all albums by Ilaiyaraja:");
-        ShowAlbums(albums);
-
-
-        int NUMBER_OF_ALBUMS_TO_PRINT_FOR_DEMO = 5;
-        for(int i = 0;i < NUMBER_OF_ALBUMS_TO_PRINT_FOR_DEMO; i++) 
+        var albums = GetAllAlbumsFromFile("./data/albumsToGet.json");
+        foreach(var album in albums)
         {
+            var albumID = await GetAlbumIdAsync(_spotifyClient, album.Name);
+            if (!string.IsNullOrEmpty(albumID))
+            {
+                album.Id = albumID;
+            }
+
+            Console.WriteLine($"To fetch album {album.Name} with Spotify ID {album.Id}");
+        }
+
+        //await ScrapeWikipediaAndGetAlbums();
+
+        //var albums = await GetAllAlbumsByArtistAsync(_yuvanArtistId);
+        //albums.Reverse(); // Reversing the albums array to get the oldest albums first
+
+        //Console.WriteLine("\n Showing all albums by Yuvan:");
+        //ShowAlbums(albums);
+
+
+        int NUMBER_OF_ALBUMS_TO_PROCESS = albums.Count;
+
+        for (int i = 0; i < NUMBER_OF_ALBUMS_TO_PROCESS; i++)
+        {
+            // Get all the tracks in the album along with the play count of each track
             var album = albums[i];
+            if (string.IsNullOrEmpty(album.Id)) { continue; }
             Console.WriteLine($"Getting all tracks from: {album.Name}");
             var tracks = await GetAllTracksByAlbumAsync(album.Id);
-            
+
             // Also make a new request to get PlayCount using the Private Client
-            foreach(var track in tracks)
+            foreach (var track in tracks)
             {
                 var info = await GetTrackInfoAsync(_spotifyPrivateClient, track.Id);
                 //Console.WriteLine($"Play Count: {info.Playcount}");
                 track.PlayCount = info.Playcount;
             }
-
-            ShowAllTracks(tracks);
+            var top3Tracks = GetTop3TracksFromAlbum(tracks);
+            await AddTracksToPlaylist(top3Tracks);
+            ShowAllTracks(top3Tracks);
         }
+        
         Console.WriteLine("--------------------------------------------------");
+    }
+
+    static List<SimpleAlbum> GetAllAlbumsFromFile(string filePath)
+    {
+        var json = File.ReadAllText(filePath);
+        var albumData =  JsonConvert.DeserializeObject<List<ParserAlbum>>(json);
+        List<SimpleAlbum> albumsToReturn = new();
+        foreach(var album in albumData)
+        {
+            albumsToReturn.Add(new SimpleAlbum
+            {
+                Name = album.name,
+            }) ;
+        }
+        return albumsToReturn;
+    }
+
+    static async Task<string> GetAlbumIdAsync(SpotifyClient spotify, string albumName)
+    {
+        var searchRequest = new SearchRequest(SearchRequest.Types.Album, albumName);
+        var searchResponse = await spotify.Search.Item(searchRequest);
+
+        if (searchResponse.Albums.Items.Count > 0)
+        {
+            return searchResponse.Albums.Items[0].Id;
+        }
+        return null;
+    }
+
+    //static async Task ScrapeWikipediaAndGetAlbums()
+    //{
+    //    string url = "https://en.wikipedia.org/wiki/List_of_film_scores_by_Ilaiyaraaja_1970s";
+
+    //    var httpClient = new HttpClient();
+    //    var html = await httpClient.GetStringAsync(url);
+
+    //    var htmlDocument = new HtmlDocument();
+    //    htmlDocument.LoadHtml(html);
+
+    //    var films = new List<string>();
+
+    //    // Select all tables with class 'wikitable'
+    //    var tables = htmlDocument.DocumentNode.SelectNodes("//table[contains(@class, 'sortable')]");
+
+    //    if (tables != null)
+    //    {
+    //        foreach (var table in tables)
+    //        {
+    //            // Find the column index for "Film"
+    //            var headers = table.SelectNodes("//th");
+    //            int filmColumnIndex = -1;
+    //            for (int i = 0; i < headers.Count; i++)
+    //            {
+    //                if (headers[i].InnerText.Trim().Equals("Film", StringComparison.OrdinalIgnoreCase))
+    //                {
+    //                    filmColumnIndex = i;
+    //                    break;
+    //                }
+    //            }
+
+    //            // If "Film" column found, extract data from that column
+    //            if (filmColumnIndex != -1)
+    //            {
+    //                var rows = table.SelectNodes("//tr[td]");
+    //                if (rows != null)
+    //                {
+    //                    foreach (var row in rows)
+    //                    {
+    //                        var filmNode = row.SelectSingleNode($"//td[{filmColumnIndex + 1}]/i/a");
+    //                        if (filmNode != null)
+    //                        {
+    //                            films.Add(HtmlEntity.DeEntitize(filmNode.InnerText.Trim()));
+    //                        }
+    //                    }
+    //                }
+    //            }
+    //        }
+    //    }
+
+    //    Console.WriteLine("Films in the 1970s:");
+    //    foreach (var film in films)
+    //    {
+    //        Console.WriteLine(film);
+    //    }
+
+    //    Console.ReadKey();
+    //}
+
+    private async static Task AddTracksToPlaylist(List<ComplexTrack> top3Tracks)
+    {
+        List<string> URIs = top3Tracks.Select(track => track.Uri.ToString()).ToList();
+        var req = new PlaylistAddItemsRequest(URIs);
+        var res = await _spotifyClient.Playlists.AddItems(_playlistID, req);
+    }
+
+    private static List<ComplexTrack> GetTop3TracksFromAlbum(List<ComplexTrack> tracks)
+    {
+        return tracks.OrderByDescending(track => track.PlayCount).Take(3).ToList();
     }
 
     private async static void ShowAllTracks(List<ComplexTrack> tracks)
@@ -72,10 +206,77 @@ class Program
     {
         _spotifyPrivateClient = new SpotifyPrivate.API();
 
+        string codeVerifier = CryptoRandom.CreateUniqueId(64);
+        Console.WriteLine($"Code Verifier: {codeVerifier}");
+
+        string codeChallenge = GenerateCodeChallenge(codeVerifier);
+        Console.WriteLine($"Code Challenge: {codeChallenge}");
+
+        string scope = "user-read-private playlist-read-private playlist-read-collaborative playlist-modify-private playlist-modify-public";
+        var authUrl = new UriBuilder("https://accounts.spotify.com/authorize")
+        {
+            Query = new QueryBuilder()
+            {
+                { "response_type", "code" },
+                { "client_id", CLIENT_ID },
+                { "scope", scope },
+                { "redirect_uri", RedirectUri },
+                { "code_challenge_method", "S256" },
+                { "code_challenge", codeChallenge }
+            }.ToString()
+        };
+
+        Console.WriteLine("Open the following URL in your browser:");
+        Console.WriteLine(authUrl.ToString());
+
+        // Instruct the user to manually copy the authorization code from the redirected URL
+        Console.WriteLine("After authorizing the application, you will be redirected to a URL.");
+        Console.WriteLine("Copy the 'code' parameter from that URL and paste it below.");
+
+        // Assume user has authenticated and we have received the authorization code
+        Console.Write("Enter the authorization code: ");
+        var authorizationCode = Console.ReadLine();
+
+        var tokenResponse = await RequestTokenAsync(authorizationCode, codeVerifier);
+        _spotifyClient = new SpotifyClient(tokenResponse.AccessToken);
+
+        // Now you can use the spotifyClient to interact with the Spotify API
+        Console.WriteLine("Access token obtained. You can now use the Spotify API.");
+    }
+
+    static async Task<PKCETokenResponse> RequestTokenAsync(string authorizationCode, string codeVerifier)
+    {
+        var tokenRequest = new PKCETokenRequest(
+            CLIENT_ID,
+            authorizationCode,
+            new Uri(RedirectUri),
+            codeVerifier
+        );
+
         var config = SpotifyClientConfig.CreateDefault();
-        var request = new ClientCredentialsRequest(CLIENT_ID, SECRET_KEY);
-        var response = await new OAuthClient(config).RequestToken(request);
-        _spotifyClient = new SpotifyClient(config.WithToken(response.AccessToken));
+        var tokenClient = new OAuthClient(config);
+        var response = await tokenClient.RequestToken(tokenRequest);
+
+        return response;
+    }
+
+    static string GenerateCodeChallenge(string codeVerifier)
+    {
+        using (var sha256 = SHA256.Create())
+        {
+            var bytes = Encoding.ASCII.GetBytes(codeVerifier);
+            var hash = sha256.ComputeHash(bytes);
+            return Base64UrlEncode(hash);
+        }
+    }
+
+    static string Base64UrlEncode(byte[] input)
+    {
+        var output = Convert.ToBase64String(input)
+            .Replace('+', '-')
+            .Replace('/', '_')
+            .TrimEnd('=');
+        return output;
     }
 
     static async Task<Track> GetTrackInfoAsync(SpotifyPrivate.API spotify, string trackId)
