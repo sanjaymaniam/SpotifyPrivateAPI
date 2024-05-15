@@ -10,19 +10,13 @@ using System.Security.Cryptography;
 using Microsoft.AspNetCore.Http.Extensions;
 using static System.Formats.Asn1.AsnWriter;
 
-class ParserAlbum
-{
-    public string name;
-    //public string language;
-    //public string year;
-}
 
 class Program
 {
     // Get these from https://developer.spotify.com/dashboard
     private static string CLIENT_ID = "YOUR_CLIENT_ID";
     private static string SECRET_KEY = "YOUR_SECRET_KEY";
-    private const string RedirectUri = "http://localhost/";
+    private const string RedirectUri = "YOUR_REDIRECT_URI"; // For now set to http://localhost for my Spotify client reg.
 
     // Using a second client to get the Play Counts
     private static SpotifyPrivate.API _spotifyPrivateClient;
@@ -49,15 +43,6 @@ class Program
             Console.WriteLine($"To fetch album {album.Name} with Spotify ID {album.Id}");
         }
 
-        //await ScrapeWikipediaAndGetAlbums();
-
-        //var albums = await GetAllAlbumsByArtistAsync(_yuvanArtistId);
-        //albums.Reverse(); // Reversing the albums array to get the oldest albums first
-
-        //Console.WriteLine("\n Showing all albums by Yuvan:");
-        //ShowAlbums(albums);
-
-
         int NUMBER_OF_ALBUMS_TO_PROCESS = albums.Count;
 
         for (int i = 0; i < NUMBER_OF_ALBUMS_TO_PROCESS; i++)
@@ -73,9 +58,9 @@ class Program
             {
                 var info = await GetTrackInfoAsync(_spotifyPrivateClient, track.Id);
                 //Console.WriteLine($"Play Count: {info.Playcount}");
-                track.PlayCount = info.Playcount;
+                track.PlayCount = int.Parse(info.Playcount);
             }
-            var top3Tracks = GetTop3TracksFromAlbum(tracks);
+            var top3Tracks = GetTopNTracksFromAlbum(tracks, 3);
             await AddTracksToPlaylist(top3Tracks);
             ShowAllTracks(top3Tracks);
         }
@@ -86,7 +71,7 @@ class Program
     static List<SimpleAlbum> GetAllAlbumsFromFile(string filePath)
     {
         var json = File.ReadAllText(filePath);
-        var albumData =  JsonConvert.DeserializeObject<List<ParserAlbum>>(json);
+        var albumData =  JsonConvert.DeserializeObject<List<GivenJsonAlbum>>(json);
         List<SimpleAlbum> albumsToReturn = new();
         foreach(var album in albumData)
         {
@@ -110,75 +95,20 @@ class Program
         return null;
     }
 
-    //static async Task ScrapeWikipediaAndGetAlbums()
-    //{
-    //    string url = "https://en.wikipedia.org/wiki/List_of_film_scores_by_Ilaiyaraaja_1970s";
-
-    //    var httpClient = new HttpClient();
-    //    var html = await httpClient.GetStringAsync(url);
-
-    //    var htmlDocument = new HtmlDocument();
-    //    htmlDocument.LoadHtml(html);
-
-    //    var films = new List<string>();
-
-    //    // Select all tables with class 'wikitable'
-    //    var tables = htmlDocument.DocumentNode.SelectNodes("//table[contains(@class, 'sortable')]");
-
-    //    if (tables != null)
-    //    {
-    //        foreach (var table in tables)
-    //        {
-    //            // Find the column index for "Film"
-    //            var headers = table.SelectNodes("//th");
-    //            int filmColumnIndex = -1;
-    //            for (int i = 0; i < headers.Count; i++)
-    //            {
-    //                if (headers[i].InnerText.Trim().Equals("Film", StringComparison.OrdinalIgnoreCase))
-    //                {
-    //                    filmColumnIndex = i;
-    //                    break;
-    //                }
-    //            }
-
-    //            // If "Film" column found, extract data from that column
-    //            if (filmColumnIndex != -1)
-    //            {
-    //                var rows = table.SelectNodes("//tr[td]");
-    //                if (rows != null)
-    //                {
-    //                    foreach (var row in rows)
-    //                    {
-    //                        var filmNode = row.SelectSingleNode($"//td[{filmColumnIndex + 1}]/i/a");
-    //                        if (filmNode != null)
-    //                        {
-    //                            films.Add(HtmlEntity.DeEntitize(filmNode.InnerText.Trim()));
-    //                        }
-    //                    }
-    //                }
-    //            }
-    //        }
-    //    }
-
-    //    Console.WriteLine("Films in the 1970s:");
-    //    foreach (var film in films)
-    //    {
-    //        Console.WriteLine(film);
-    //    }
-
-    //    Console.ReadKey();
-    //}
-
-    private async static Task AddTracksToPlaylist(List<ComplexTrack> top3Tracks)
+    private async static Task AddTracksToPlaylist(List<ComplexTrack> tracksToAdd, int position = -1)
     {
-        List<string> URIs = top3Tracks.Select(track => track.Uri.ToString()).ToList();
+        List<string> URIs = tracksToAdd.Select(track => track.Uri.ToString()).ToList();
         var req = new PlaylistAddItemsRequest(URIs);
+        if (position != -1)
+        {
+            req.Position = position;
+        }
         var res = await _spotifyClient.Playlists.AddItems(_playlistID, req);
     }
 
-    private static List<ComplexTrack> GetTop3TracksFromAlbum(List<ComplexTrack> tracks)
+    private static List<ComplexTrack> GetTopNTracksFromAlbum(List<ComplexTrack> tracks, int n)
     {
-        return tracks.OrderByDescending(track => track.PlayCount).Take(3).ToList();
+        return tracks.OrderByDescending(track => track.PlayCount).Take(n).ToList();
     }
 
     private async static void ShowAllTracks(List<ComplexTrack> tracks)

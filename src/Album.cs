@@ -5,6 +5,16 @@ namespace SpotifyPrivate
 {
     namespace Album
     {
+        /// <summary>
+        /// Wrapper to store each of the albums defined in albumsToGet.json
+        /// </summary>
+        public class GivenJsonAlbum
+        {
+            public string name;
+            //public string language;
+            //public string year;
+        }
+
         public class AlbumUnion
         {
             [JsonProperty("__typename", NullValueHandling = NullValueHandling.Ignore)]

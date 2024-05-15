@@ -9,7 +9,7 @@ namespace SpotifyPrivateAPI.src
 {
     public class ComplexTrack : SimpleTrack
     {
-        public string PlayCount;
+        public int PlayCount;
 
         public ComplexTrack(SimpleTrack track) : base()
         {
