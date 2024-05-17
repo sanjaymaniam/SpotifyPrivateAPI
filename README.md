@@ -6,6 +6,9 @@ It's like making your own "greatest hits" playlist without needing to manually s
 
 You can also make use of the available methods to manage your playlists.
 
+This playlist, for example, was created with this util and modified to include/exlude some Harris tracks:
+https://open.spotify.com/playlist/4oi3TiZKftxZMNqsUcROJS?si=b793ff4998d847af
+
 ## Usage
 
 - Populate the `albumsToGet.json` file with all the albums you want to include.
