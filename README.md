@@ -1,24 +1,18 @@
-# SpotifyPrivateAPI
-Simple Wrapper for Front-end Private Spotify API, allowing you to get play counts and monthly listeners
+# TinySpotifyManager
+
+This is a little program to find all the hit songs from any artist you like and populate a playlist with those songs.
+For instance, if you're into Harris Jayaraj, you can list all his albums in a .json file, and this program will dig through those albums, pick out the hits, and add them to a Spotify playlist you specify.
+It's like making your own "greatest hits" playlist without needing to manually search for each track.
 
 ## Usage
 
-```c#
-
-var spotify = new SpotifyPrivate.API();
-
-var track = await spotify.GetTrack("4zZ2rPOa8itw3VuusVSicv");
-Console.WriteLine(track.Data.TrackUnion.Playcount); // => 65052099
-//A lot of another infos are available, check `Track.cs` for all fields
-
-var artist = await spotify.GetArtist("0jOs0wnXCu1bGGP7kh5uIu");
-Console.WriteLine(artist.Data.ArtistUnion.Stats.MonthlyListeners); // => 2825621
-//A lot of another infos like Followers are available, check `Artist.cs` for all fields
-
-
-//See Program.cs for use more example
-```
-
+- Populate the `albumsToGet.json` file with all the albums you want to include.
+- Sign up for Spotify API access and get your Client ID, Secret Key, and a redirect URI ready.
+- Update the fields in Program.cs with the Client ID, Secret Key, and a redirect URI.
+- Update the Playlist ID.
+- Compile and run this program.
+- You'll be asked to login to your Spotify account on your browser. After you log in, you'll be redirected to the specified URI.
+- Copy the auth token from the redirect URI and paste into this program's console
 
 ## How it works
 
@@ -26,14 +20,16 @@ Routes are based on [Spotify Web Player](https://open.spotify.com/) API, all req
 
 ## Available methods
 
-- Track
-- Artist
-- Playlist (with recursive content fetch and chart data support)
-- Album
-- User
-- Search User
-- Follow User
+- GetAllAlbumsFromFile: Reads a JSON file containing album names and converts it into a list of SimpleAlbum objects.
+- GetAlbumIdAsync: Searches for an album on Spotify using its name and returns the album's Spotify ID.
+- AddTracksToPlaylist: Adds a list of tracks to a specified Spotify playlist.
+- GetTopNTracksFromAlbum: Sorts tracks by play count and retrieves the top 'N' tracks from the list.
+- GetTrackInfoAsync: Fetches detailed information about a track using the private Spotify API, including the play count.
+- GetAllAlbumsByArtistAsync: Retrieves all albums for a specified artist ID from Spotify. (the response from the Spotify API for this was not reliable- many albums were skipped, hence we manually populate the albumsToGet.json file).
+- GetAllTracksByAlbumAsync: Fetches all tracks from a specified album ID.
 
-## Disclaimer
-
-The routes used in this project were not designed to be accessed by third parties, their use is not recommended, this is more like a reverse engineering proof of concept. You are fully responsible for what you do using the data in this repository.
+## TO DO
+- [ ] Avoid having to login each time- store the auth token and use the refresh token.
+- [ ] Scrape the artist's Wikipedia page for their complete discography and populate albumsToGet.json automatically. Just accepting the artist name as an input should be enough.
+- [ ] Rename the repo to TinySpotifyManager.
+- [ ] After I add some songs to the playlist, I want the playlist to remain sorted. Placing each track in the right place in the Spotify app is tedious- I'd like to have a sort function here that sorts the playlist. (Clear all the tracks, push the sorted set of tracks to the playlist. Spotify API does not support sorting the playlist directly at the moment.)
