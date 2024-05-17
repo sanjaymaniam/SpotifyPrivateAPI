@@ -36,5 +36,5 @@ Routes are based on [Spotify Web Player](https://open.spotify.com/) API, all req
 ## TO DO
 - [ ] Avoid having to login each time- store the auth token and use the refresh token.
 - [ ] Scrape the artist's Wikipedia page for their complete discography and populate albumsToGet.json automatically. Just accepting the artist name as an input should be enough.
-- [ ] Rename the repo to TinySpotifyManager.
+- [ ] Automatically fetch the auth token instead of having to copy paste it manually.
 - [ ] After I add some songs to the playlist, I want the playlist to remain sorted. Placing each track in the right place in the Spotify app is tedious- I'd like to have a sort function here that sorts the playlist. (Clear all the tracks, push the sorted set of tracks to the playlist. Spotify API does not support sorting the playlist directly at the moment.)
