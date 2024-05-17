@@ -4,6 +4,8 @@ This is a little program to find all the hit songs from any artist you like and 
 For instance, if you're into Harris Jayaraj, you can list all his albums in a .json file, and this program will dig through those albums, pick out the hits, and add them to a Spotify playlist you specify.
 It's like making your own "greatest hits" playlist without needing to manually search for each track.
 
+You can also make use of the available methods to manage your playlists.
+
 ## Usage
 
 - Populate the `albumsToGet.json` file with all the albums you want to include.
