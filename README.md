@@ -39,3 +39,4 @@ Routes are based on [Spotify Web Player](https://open.spotify.com/) API, all req
 - [ ] Automatically fetch the auth token instead of having to copy paste it manually.
 - [ ] After I add some songs to the playlist, I want the playlist to remain sorted. Placing each track in the right place in the Spotify app is tedious- I'd like to have a sort function here that sorts the playlist. (Clear all the tracks, push the sorted set of tracks to the playlist. Spotify API does not support sorting the playlist directly at the moment.)
 - [ ] If an album matching the exact search term is not found, do not add it and notify in the summary later. For example, the album Visaranai is not on Spotify, and instead of skipping it, the tool just adds Viduthalai's tracks.
+- [ ] Handle cases where the album has > threshold number of hit songs- how to measure this?
