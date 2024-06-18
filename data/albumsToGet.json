@@ -1,5 +1,522 @@
 ﻿[
   {
-    "name": "Thuppakki"
+    "name": "Paravaigal Palavitham",
+    "language": "Tamil",
+    "year": "1988"
+  },
+  {
+    "name": "Poo Manam",
+    "language": "Tamil",
+    "year": "1989"
+  },
+  {
+    "name": "Seetha",
+    "language": "Tamil",
+    "year": "1990"
+  },
+  {
+    "name": "Nila Pennae",
+    "language": "Tamil",
+    "year": "1990"
+  },
+  {
+    "name": "Aatha Naan Pass Ayittaen",
+    "language": "Tamil",
+    "year": "1990"
+  },
+  {
+    "name": "Maathangal Ezhu",
+    "language": "Tamil",
+    "year": "1993"
+  },
+  {
+    "name": "Jai Hind",
+    "language": "Tamil",
+    "year": "1994"
+  },
+  {
+    "name": "Karnaa",
+    "language": "Tamil",
+    "year": "1995"
+  },
+  {
+    "name": "Pasumpon",
+    "language": "Tamil",
+    "year": "1995"
+  },
+  {
+    "name": "Murai Maman",
+    "language": "Tamil",
+    "year": "1995"
+  },
+  {
+    "name": "Villadhi Villain",
+    "language": "Tamil",
+    "year": "1995"
+  },
+  {
+    "name": "Mr. Madras",
+    "language": "Tamil",
+    "year": "1995"
+  },
+  {
+    "name": "Ayudha Poojai",
+    "language": "Tamil",
+    "year": "1995"
+  },
+  {
+    "name": "Coimbatore Mappillai",
+    "language": "Tamil",
+    "year": "1996"
+  },
+  {
+    "name": "Musthaffaa",
+    "language": "Tamil",
+    "year": "1996"
+  },
+  {
+    "name": "Sengottai",
+    "language": "Tamil",
+    "year": "1996"
+  },
+  {
+    "name": "Priyam",
+    "language": "Tamil",
+    "year": "1996"
+  },
+  {
+    "name": "Subash",
+    "language": "Tamil",
+    "year": "1996"
+  },
+  {
+    "name": "Tata Birla",
+    "language": "Tamil",
+    "year": "1996"
+  },
+  {
+    "name": "Nethaji",
+    "language": "Tamil",
+    "year": "1996"
+  },
+  {
+    "name": "Pudhayal",
+    "language": "Tamil",
+    "year": "1997"
+  },
+  {
+    "name": "Thaali Pudhusu",
+    "language": "Tamil",
+    "year": "1997"
+  },
+  {
+    "name": "Aahaa Enna Porutham",
+    "language": "Tamil",
+    "year": "1997"
+  },
+  {
+    "name": "Arasiyal",
+    "language": "Tamil",
+    "year": "1997"
+  },
+  {
+    "name": "Smile Please",
+    "language": "Tamil",
+    "year": "1997"
+  },
+  {
+    "name": "Nilaave Vaa",
+    "language": "Tamil",
+    "year": "1998"
+  },
+  {
+    "name": "Thaayin Manikodi",
+    "language": "Tamil",
+    "year": "1998"
+  },
+  {
+    "name": "Uyirodu Uyiraga",
+    "language": "Tamil",
+    "year": "1998"
+  },
+  {
+    "name": "Ethirum Pudhirum",
+    "language": "Tamil",
+    "year": "1999"
+  },
+  {
+    "name": "Suyamvaram",
+    "language": "Tamil",
+    "year": "1999"
+  },
+  {
+    "name": "Pooparika Varugirom",
+    "language": "Tamil",
+    "year": "1999"
+  },
+  {
+    "name": "Puratchikkaaran",
+    "language": "Tamil",
+    "year": "2000"
+  },
+  {
+    "name": "Snehithiye",
+    "language": "Tamil",
+    "year": "2000"
+  },
+  {
+    "name": "Dhill",
+    "language": "Tamil",
+    "year": "2001"
+  },
+  {
+    "name": "Poovellam Un Vasam",
+    "language": "Tamil",
+    "year": "2001"
+  },
+  {
+    "name": "Vedham",
+    "language": "Tamil",
+    "year": "2001"
+  },
+  {
+    "name": "Alli Thandha Vaanam",
+    "language": "Tamil",
+    "year": "2001"
+  },
+  {
+    "name": "Thavasi",
+    "language": "Tamil",
+    "year": "2001"
+  },
+  {
+    "name": "Karmegham",
+    "language": "Tamil",
+    "year": "2002"
+  },
+  {
+    "name": "Run",
+    "language": "Tamil",
+    "year": "2002"
+  },
+  {
+    "name": "Villain",
+    "language": "Tamil",
+    "year": "2002"
+  },
+  {
+    "name": "Dhool",
+    "language": "Tamil",
+    "year": "2003"
+  },
+  {
+    "name": "Anbe Sivam",
+    "language": "Tamil",
+    "year": "2003"
+  },
+  {
+    "name": "Anbu",
+    "language": "Tamil",
+    "year": "2003"
+  },
+  {
+    "name": "Pallavan",
+    "language": "Tamil",
+    "year": "2003"
+  },
+  {
+    "name": "Well Done",
+    "language": "Tamil",
+    "year": "2003"
+  },
+  {
+    "name": "Parthiban Kanavu",
+    "language": "Tamil",
+    "year": "2003"
+  },
+  {
+    "name": "Aahaa Ethanai Azhagu",
+    "language": "Tamil",
+    "year": "2003"
+  },
+  {
+    "name": "Kadhal Kisu Kisu",
+    "language": "Tamil",
+    "year": "2003"
+  },
+  {
+    "name": "Thithikudhe",
+    "language": "Tamil",
+    "year": "2003"
+  },
+  {
+    "name": "Alai",
+    "language": "Tamil",
+    "year": "2003"
+  },
+  {
+    "name": "Thirumalai",
+    "language": "Tamil",
+    "year": "2003"
+  },
+  {
+    "name": "Iyarkai",
+    "language": "Tamil",
+    "year": "2003"
+  },
+  {
+    "name": "Joot",
+    "language": "Tamil",
+    "year": "2003"
+  },
+  {
+    "name": "Thendral",
+    "language": "Tamil",
+    "year": "2004"
+  },
+  {
+    "name": "Varnajalam",
+    "language": "Tamil",
+    "year": "2004"
+  },
+  {
+    "name": "Ghilli",
+    "language": "Tamil",
+    "year": "2004"
+  },
+  {
+    "name": "Sullan",
+    "language": "Tamil",
+    "year": "2004"
+  },
+  {
+    "name": "Madhurey",
+    "language": "Tamil",
+    "year": "2004"
+  },
+  {
+    "name": "Ji",
+    "language": "Tamil",
+    "year": "2005"
+  },
+  {
+    "name": "London",
+    "language": "Tamil",
+    "year": "2005"
+  },
+  {
+    "name": "Chandramukhi",
+    "language": "Tamil",
+    "year": "2005"
+  },
+  {
+    "name": "Kana Kandaen",
+    "language": "Tamil",
+    "year": "2005"
+  },
+  {
+    "name": "Power of Women",
+    "language": "Tamil",
+    "year": "2005"
+  },
+  {
+    "name": "Ponniyin Selvan",
+    "language": "Tamil",
+    "year": "2005"
+  },
+  {
+    "name": "Majaa",
+    "language": "Tamil",
+    "year": "2005"
+  },
+  {
+    "name": "Paramasivan",
+    "language": "Tamil",
+    "year": "2006"
+  },
+  {
+    "name": "Aathi",
+    "language": "Tamil",
+    "year": "2006"
+  },
+  {
+    "name": "Pasa Kiligal",
+    "language": "Tamil",
+    "year": "2006"
+  },
+  {
+    "name": "Thambi",
+    "language": "Tamil",
+    "year": "2006"
+  },
+  {
+    "name": "Em Magan",
+    "language": "Tamil",
+    "year": "2006"
+  },
+  {
+    "name": "Sivappathigaram",
+    "language": "Tamil",
+    "year": "2006"
+  },
+  {
+    "name": "Poi",
+    "language": "Tamil",
+    "year": "2006"
+  },
+  {
+    "name": "Mozhi",
+    "language": "Tamil",
+    "year": "2007"
+  },
+  {
+    "name": "Periyar",
+    "language": "Tamil",
+    "year": "2007"
+  },
+  {
+    "name": "Pirivom Santhippom",
+    "language": "Tamil",
+    "year": "2008"
+  },
+  {
+    "name": "Arai En 305-il Kadavul",
+    "language": "Tamil",
+    "year": "2008"
+  },
+  {
+    "name": "Kuruvi",
+    "language": "Tamil",
+    "year": "2008"
+  },
+  {
+    "name": "Muniyandi Vilangial Moonramandu",
+    "language": "Tamil",
+    "year": "2008"
+  },
+  {
+    "name": "Jeyam Kondaan",
+    "language": "Tamil",
+    "year": "2008"
+  },
+  {
+    "name": "Alibhabha",
+    "language": "Tamil",
+    "year": "2008"
+  },
+  {
+    "name": "Raman Thediya Seethai",
+    "language": "Tamil",
+    "year": "2008"
+  },
+  {
+    "name": "Ellam Avan Seyal",
+    "language": "Tamil",
+    "year": "2008"
+  },
+  {
+    "name": "Mahesh, Saranya Matrum Palar",
+    "language": "Tamil",
+    "year": "2008"
+  },
+  {
+    "name": "Abhiyum Naanum",
+    "language": "Tamil",
+    "year": "2008"
+  },
+  {
+    "name": "Kadhalna Summa Illai",
+    "language": "Tamil",
+    "year": "2009"
+  },
+  {
+    "name": "1977",
+    "language": "Tamil",
+    "year": "2009"
+  },
+  {
+    "name": "Peranmai",
+    "language": "Tamil",
+    "year": "2009"
+  },
+  {
+    "name": "Kanden Kadhalai",
+    "language": "Tamil",
+    "year": "2009"
+  },
+  {
+    "name": "Ilamai Itho Itho",
+    "language": "Tamil",
+    "year": "2009"
+  },
+  {
+    "name": "Mandhira Punnagai",
+    "language": "Tamil",
+    "year": "2010"
+  },
+  {
+    "name": "Magizhchi",
+    "language": "Tamil",
+    "year": "2010"
+  },
+  {
+    "name": "Ilaignan",
+    "language": "Tamil",
+    "year": "2011"
+  },
+  {
+    "name": "Siruthai",
+    "language": "Tamil",
+    "year": "2011"
+  },
+  {
+    "name": "Kaavalan",
+    "language": "Tamil",
+    "year": "2011"
+  },
+  {
+    "name": "Thambi Vettothi Sundaram",
+    "language": "Tamil",
+    "year": "2011"
+  },
+  {
+    "name": "Sadhurangam",
+    "language": "Tamil",
+    "year": "2011"
+  },
+  {
+    "name": "Thalaivan",
+    "language": "Tamil",
+    "year": "2013"
+  },
+  {
+    "name": "Puthiya Thiruppangal",
+    "language": "Tamil",
+    "year": "2013"
+  },
+  {
+    "name": "Jannal Oram",
+    "language": "Tamil",
+    "year": "2013"
+  },
+  {
+    "name": "Eli",
+    "language": "Tamil",
+    "year": "2015"
+  },
+  {
+    "name": "Uchathula Shiva",
+    "language": "Tamil",
+    "year": "2016"
+  },
+  {
+    "name": "Thiruttu Payale 2",
+    "language": "Tamil",
+    "year": "2017"
+  },
+  {
+    "name": "Aaruthra",
+    "language": "Tamil",
+    "year": "2018"
   }
 ]

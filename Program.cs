@@ -1,22 +1,18 @@
 ﻿using SpotifyPrivate.Album;
 using SpotifyAPI.Web;
-using static SpotifyAPI.Web.PlayerResumePlaybackRequest;
 using SpotifyPrivateAPI.src;
-using HtmlAgilityPack;
 using Newtonsoft.Json;
 using IdentityModel;
 using System.Text;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Http.Extensions;
-using static System.Formats.Asn1.AsnWriter;
 
 
 class Program
 {
     // Get these from https://developer.spotify.com/dashboard
-    private static string CLIENT_ID = "YOUR_CLIENT_ID";
-    private static string SECRET_KEY = "YOUR_SECRET_KEY";
-    private const string RedirectUri = "YOUR_REDIRECT_URI"; // For now set to http://localhost for my Spotify client reg.
+    private static string CLIENT_ID = "f795b603c81b482bb4c2ac19642fa31b";
+    private const string RedirectUri = "http://localhost/"; // For now set to http://localhost for my Spotify client reg.
 
     // Using a second client to get the Play Counts
     private static SpotifyPrivate.API _spotifyPrivateClient;
@@ -25,47 +21,75 @@ class Program
     // Storing the artist ID for Yuvan to fetch all his albums
     //private static string _yuvanArtistId = "29aw5YCdIw2FEXYyAJZI8l";
 
-    private static string _playlistID = "YOUR_PLAYLIST_ID";
+    private static string _playlistID = "0Fj8jF7WnhGsK3m5hfjc4L";
 
     static async Task Main()
     {
         await InitializeSpotifyClients();
 
         var albums = GetAllAlbumsFromFile("./data/albumsToGet.json");
-        foreach(var album in albums)
+        foreach (var album in albums)
         {
-            var albumID = await GetAlbumIdAsync(_spotifyClient, album.Name);
+            var albumID = await GetAlbumIdFromSpotifyAsync(_spotifyClient, album.Name);
             if (!string.IsNullOrEmpty(albumID))
             {
                 album.Id = albumID;
             }
 
-            Console.WriteLine($"To fetch album {album.Name} with Spotify ID {album.Id}");
+            WriteBoth($"To fetch album {album.Name} with Spotify ID {album.Id}");
         }
 
         int NUMBER_OF_ALBUMS_TO_PROCESS = albums.Count;
 
-        for (int i = 0; i < NUMBER_OF_ALBUMS_TO_PROCESS; i++)
-        {
-            // Get all the tracks in the album along with the play count of each track
-            var album = albums[i];
-            if (string.IsNullOrEmpty(album.Id)) { continue; }
-            Console.WriteLine($"Getting all tracks from: {album.Name}");
-            var tracks = await GetAllTracksByAlbumAsync(album.Id);
+        // Ensure the directory exists before opening the StreamWriter
+        string directoryPath = "../data";
+        string filePath = Path.Combine(directoryPath, "addedSongs.txt");
 
-            // Also make a new request to get PlayCount using the Private Client
-            foreach (var track in tracks)
-            {
-                var info = await GetTrackInfoAsync(_spotifyPrivateClient, track.Id);
-                //Console.WriteLine($"Play Count: {info.Playcount}");
-                track.PlayCount = int.Parse(info.Playcount);
-            }
-            var top3Tracks = GetTopNTracksFromAlbum(tracks, 3);
-            await AddTracksToPlaylist(top3Tracks);
-            ShowAllTracks(top3Tracks);
+        if (!Directory.Exists(directoryPath))
+        {
+            Directory.CreateDirectory(directoryPath);
         }
-        
-        Console.WriteLine("--------------------------------------------------");
+
+        // Open a StreamWriter to overwrite the existing file or create a new one if it doesn't exist
+        using (StreamWriter writer = new StreamWriter(filePath, false))
+        {
+            for (int i = 0; i < NUMBER_OF_ALBUMS_TO_PROCESS; i++)
+            {
+                var album = albums[i];
+                if (string.IsNullOrEmpty(album.Id)) continue;
+                WriteBoth($"Getting all tracks from: {album.Name}", writer);
+                var tracks = await GetAllTracksByAlbumAsync(album.Id);
+
+                foreach (var track in tracks)
+                {
+                    var info = await GetTrackInfoAsync(_spotifyPrivateClient, track.Id);
+                    if (info != null)
+                    {
+                        track.PlayCount = int.Parse(info.Playcount);
+                    }
+                }
+                var top3Tracks = GetTopNTracksFromAlbum(tracks, 3);
+
+                // Write the top 3 tracks to the file and console
+                writer.WriteLine($"Album: {album.Name}");
+                Console.WriteLine($"Album: {album.Name}");
+                foreach (var track in top3Tracks)
+                {
+                    WriteBoth($"Track: {track.Name}, PlayCount: {track.PlayCount}", writer);
+                }
+                await AddTracksToPlaylistAsync(top3Tracks);
+                WriteBoth("--------------------------------------------------", writer);
+            }
+        }
+
+        WriteBoth("--------------------------------------------------");
+    }
+
+    // Helper method to write to both console and a StreamWriter
+    static void WriteBoth(string message, StreamWriter writer = null)
+    {
+        Console.WriteLine(message);
+        writer?.WriteLine(message);
     }
 
     static List<SimpleAlbum> GetAllAlbumsFromFile(string filePath)
@@ -83,19 +107,23 @@ class Program
         return albumsToReturn;
     }
 
-    static async Task<string> GetAlbumIdAsync(SpotifyClient spotify, string albumName)
+    static async Task<string> GetAlbumIdFromSpotifyAsync(SpotifyClient spotify, string albumName)
     {
         var searchRequest = new SearchRequest(SearchRequest.Types.Album, albumName);
         var searchResponse = await spotify.Search.Item(searchRequest);
 
         if (searchResponse.Albums.Items.Count > 0)
         {
-            return searchResponse.Albums.Items[0].Id;
+            foreach (var album in searchResponse.Albums.Items)
+            {
+                return album.Id;
+            }
         }
+
         return null;
     }
 
-    private async static Task AddTracksToPlaylist(List<ComplexTrack> tracksToAdd, int position = -1)
+    private async static Task AddTracksToPlaylistAsync(List<ComplexTrack> tracksToAdd, int position = -1)
     {
         List<string> URIs = tracksToAdd.Select(track => track.Uri.ToString()).ToList();
         var req = new PlaylistAddItemsRequest(URIs);
